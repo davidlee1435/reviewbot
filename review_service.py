@@ -7,20 +7,24 @@ db = mongo_client.reviewbot
 reviews_collection = db.reviews
 
 def create_review(user, command, channel):
-    print "Creating review from " + command
-    pr_url = extract_pr_url(command)
-    print pr_url
-    review = {'reviewee': user,
-              'reviewer': None,
+    pr_url = _extract_pr_url(command)
+    print "Creating review for {0} from user {1}".format(pr_url, user)
+    if not pr_url:
+        return
+    review = {'reviewee_id': user,
+              'reviewer_id': None,
               'url': pr_url,
               'created_at': datetime.datetime.utcnow()}
     review_id = reviews_collection.insert_one(review).inserted_id
-    print reviews_collection.find_one({'reviewee': user})
     return review_id
 
-def extract_pr_url(command):
+def _extract_pr_url(command):
     words = command.split()
-    url = [word for word in words if "github.com" in word]
+    url = [word for word in words if "github.com" in word and "/pull/" in word]
     if not url:
-        return None
+        print "Url not in command!"
+        return
     return url[0]
+
+def get_review(review_id):
+    return reviews_collection.find_one({"_id": review_id})

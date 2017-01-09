@@ -25,10 +25,17 @@ INTENTS = {
 #         pass
 #     else:
 #         return
+def init():
+    users = sh.get_all_users()
+    rh.set_initial_user_statuses(users)
 
 def route_command(user, command, channel):
     if command.startswith('review'):
-        review_service.create_review(user, command, channel)
+        review_id = review_service.create_review(user, command, channel)
+        review = review_service.get_review(review_id)
+        available_users = redis_helper.find_available_users()
+        sh.broadcast_new_review_notification(review, available_users)
+        print rh.find_available_users()
         response = "Your request has been received!"
     elif command.startswith('busy'):
         rh.set_user_availability(user, False)
@@ -60,13 +67,13 @@ def parse_slack_output(slack_rtm_output):
 
 if __name__ == "__main__":
     READ_WEBSOCKET_DELAY = 1 # 1 second delay between reading from firehose
-
+    init()
     if slack_client.rtm_connect():
         print("Reviewbot connected and running!")
         while True:
             user, command, channel = parse_slack_output(slack_client.rtm_read())
             if user and command and channel:
-                print channel
+                print "Received command <{0}> from user {1} in channel {2}".format(command, user, channel)
                 route_command(user, command, channel)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
