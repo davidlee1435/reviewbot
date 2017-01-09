@@ -3,7 +3,7 @@ import time
 import redis
 import random
 import re
-
+from pymongo import MongoClient
 from slackclient import SlackClient
 
 
@@ -14,18 +14,33 @@ BOT_ID = os.environ.get("BOT_ID")
 AT_BOT = "<@" + BOT_ID + ">"
 EXAMPLE_COMMAND = "do"
 
-# instantiate Slack & Twilio clients
+# instantiate clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 r = redis.StrictRedis(host='localhost', port=6379, db=0)
+mongo = MongoClient('localhost', 27017)
+db = mongo.test_database
+
+INTENTS = {
+    'CLAIM_REVIEW': 0,
+    'NOTIFY_REVIEWEE': 1
+}
 
 def post_message(channel, message, as_user=True):
     slack_client.api_call("chat.postMessage", channel=channel, text=message, as_user=as_user)
+
+def outgoing_messages(intent, user, command, channel):
+    if intent == INTENTS['CLAIM_REVIEW']:
+        pass
+    elif intent == INTENTS['NOTIFY_REVIEWEE']:
+        pass
+    else:
+        return
 
 def route_command(user, command, channel):
     if command.startswith('review'):
         response = "Your request has been received!"
     elif command.startswith('busy'):
-        set_user_availability(user, False)
+        set_user_availability(us-er, False)
         response = "Gotcha. You won't receive any requests"
     elif command.startswith('not busy'):
         set_user_availability(user, True)
