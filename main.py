@@ -1,11 +1,9 @@
 import os
 import time
-import random
-import re
 from slackclient import SlackClient
-import mongo_helper as mh
 import redis_helper as rh
 import slack_helper as sh
+import review_service
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
 
@@ -20,16 +18,17 @@ INTENTS = {
     'NOTIFY_REVIEWEE': 1
 }
 
-def outgoing_messages(intent, user, command, channel):
-    if intent == INTENTS['CLAIM_REVIEW']:
-        pass
-    elif intent == INTENTS['NOTIFY_REVIEWEE']:
-        pass
-    else:
-        return
+# def outgoing_messages(intent, user, command, channel):
+#     if intent == INTENTS['CLAIM_REVIEW']:
+#         pass
+#     elif intent == INTENTS['NOTIFY_REVIEWEE']:
+#         pass
+#     else:
+#         return
 
 def route_command(user, command, channel):
     if command.startswith('review'):
+        review_service.create_review(user, command, channel)
         response = "Your request has been received!"
     elif command.startswith('busy'):
         rh.set_user_availability(user, False)
