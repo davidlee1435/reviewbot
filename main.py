@@ -1,32 +1,24 @@
 import os
 import time
-import redis
 import random
 import re
-from pymongo import MongoClient
 from slackclient import SlackClient
-
-
+import mongo_helper as mh
+import redis_helper as rh
+import slack_helper as sh
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
-EXAMPLE_COMMAND = "do"
 
 # instantiate clients
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
-mongo = MongoClient('localhost', 27017)
-db = mongo.test_database
 
 INTENTS = {
     'CLAIM_REVIEW': 0,
     'NOTIFY_REVIEWEE': 1
 }
-
-def post_message(channel, message, as_user=True):
-    slack_client.api_call("chat.postMessage", channel=channel, text=message, as_user=as_user)
 
 def outgoing_messages(intent, user, command, channel):
     if intent == INTENTS['CLAIM_REVIEW']:
@@ -40,17 +32,14 @@ def route_command(user, command, channel):
     if command.startswith('review'):
         response = "Your request has been received!"
     elif command.startswith('busy'):
-        set_user_availability(us-er, False)
+        rh.set_user_availability(user, False)
         response = "Gotcha. You won't receive any requests"
-    elif command.startswith('not busy'):
-        set_user_availability(user, True)
+    elif command.startswith('available'):
+        rh.set_user_availability(user, True)
         response = "Cool! I'll let you know when there are PRs that need reviewing"
     else:
         response = "I didn't understand that. If you're busy, say 'busy'. If you're not busy, say 'not busy'. If you need a review, type 'review <url_to_github_PR>'"
-    post_message(channel, response, as_user=True)
-
-def set_user_availability(user, availability):
-    r.set(user, availability)
+    sh.post_message(channel, response, as_user=True)
 
 def parse_slack_output(slack_rtm_output):
     """
@@ -77,6 +66,7 @@ if __name__ == "__main__":
         while True:
             user, command, channel = parse_slack_output(slack_client.rtm_read())
             if user and command and channel:
+                print channel
                 route_command(user, command, channel)
             time.sleep(READ_WEBSOCKET_DELAY)
     else:
