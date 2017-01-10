@@ -4,6 +4,10 @@ from slackclient import SlackClient
 import redis_helper as rh
 import slack_helper as sh
 import review_service
+from pymongo import MongoClient
+
+mongo_client = MongoClient('localhost', 27017)
+
 # starterbot's ID as an environment variable
 BOT_ID = os.environ.get("BOT_ID")
 
@@ -26,6 +30,7 @@ INTENTS = {
 #     else:
 #         return
 def init():
+    mongo_client.drop_database('reviewbot')
     users = sh.get_all_users()
     rh.set_initial_user_statuses(users)
 
@@ -33,9 +38,8 @@ def route_command(user, command, channel):
     if command.startswith('review'):
         review_id = review_service.create_review(user, command, channel)
         review = review_service.get_review(review_id)
-        available_users = redis_helper.find_available_users()
+        available_users = rh.find_available_users()
         sh.broadcast_new_review_notification(review, available_users)
-        print rh.find_available_users()
         response = "Your request has been received!"
     elif command.startswith('busy'):
         rh.set_user_availability(user, False)
