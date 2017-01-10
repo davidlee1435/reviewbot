@@ -17,8 +17,8 @@ def get_all_users():
         return [member['id'] for member in response.get('members')]
     return []
 
-def post_message(channel, message, as_user=True):
-    slack_client.api_call("chat.postMessage", channel=channel, text=message, as_user=as_user)
+def post_message(channel, message, as_user=True, link_names=1):
+    slack_client.api_call("chat.postMessage", channel=channel, text=message, as_user=as_user, link_names=link_names)
 
 def create_notification_message(review):
     reviewee_id = review.get('reviewee_id')
@@ -28,16 +28,14 @@ def create_notification_message(review):
     if reviewee_info_response.get('ok'):
         reviewee_info = reviewee_info_response.get('user')
         reviewee_name = "@" + reviewee_info.get('name')
-    return "{0} requested a PR: {1}".format(reviewee_info.get('name'), url)
+        print reviewee_name
+    return "{0} requested a PR: {1}".format(reviewee_name, url)
 
-def broadcast_new_review_notification(review, available_users):
+def broadcast_new_review_notification(reviewee, review, available_users):
     im_channels = slack_client.api_call('im.list').get('ims')
     for channel in im_channels:
-        if channel.get('user') in available_users:
+        channel_user = channel.get('user')
+        if channel_user in available_users and channel_user != reviewee:
             message = create_notification_message(review)
-            print "Sending message to {0}".format(channel.get('id'))
-            slack_client.api_call('chat.postMessage',
-                                  channel=channel.get('id'),
-                                  text=message,
-                                  as_user=False)
+            post_message(channel.get('id'), message, as_user=False)
     return

@@ -39,7 +39,7 @@ def route_command(user, command, channel):
         review_id = review_service.create_review(user, command, channel)
         review = review_service.get_review(review_id)
         available_users = rh.find_available_users()
-        sh.broadcast_new_review_notification(review, available_users)
+        sh.broadcast_new_review_notification(user, review, available_users)
         response = "Your request has been received!"
     elif command.startswith('busy'):
         rh.set_user_availability(user, False)
