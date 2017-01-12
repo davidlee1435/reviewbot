@@ -2,7 +2,7 @@ import os
 from slackclient import SlackClient
 import redis_helper
 import mongo_helper
-import review_service
+from services import review_service
 BOT_ID = os.environ.get("BOT_ID")
 
 # constants

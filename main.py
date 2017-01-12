@@ -1,9 +1,9 @@
 import os
 import time
 from slackclient import SlackClient
-import redis_helper as rh
-import slack_helper as sh
-import review_service
+from helpers import redis_helper as rh
+from helpers import slack_helper as sh
+from services import review_service
 from pymongo import MongoClient
 
 mongo_client = MongoClient('localhost', 27017)
@@ -22,13 +22,6 @@ INTENTS = {
     'NOTIFY_REVIEWEE': 1
 }
 
-# def outgoing_messages(intent, user, command, channel):
-#     if intent == INTENTS['CLAIM_REVIEW']:
-#         pass
-#     elif intent == INTENTS['NOTIFY_REVIEWEE']:
-#         pass
-#     else:
-#         return
 def init():
     mongo_client.drop_database('reviewbot')
     users = sh.get_all_users()

@@ -1,21 +1,11 @@
-import re
-import datetime
-from pymongo import MongoClient
-
-mongo_client = MongoClient('localhost', 27017)
-db = mongo_client.reviewbot
-reviews_collection = db.reviews
+from gateways import review_gateway
 
 def create_review(user, command, channel):
     pr_url = _extract_pr_url(command)
     print "Creating review for {0} from user {1}".format(pr_url, user)
     if not pr_url:
         return
-    review = {'reviewee_id': user,
-              'reviewer_id': None,
-              'url': pr_url,
-              'created_at': datetime.datetime.utcnow()}
-    review_id = reviews_collection.insert_one(review).inserted_id
+    review_id = review_gateway.add_review(reviewee_id=user, reviewer_id=None, url=pr_url)
     return review_id
 
 def _extract_pr_url(command):
@@ -27,4 +17,4 @@ def _extract_pr_url(command):
     return url[0]
 
 def get_review(review_id):
-    return reviews_collection.find_one({"_id": review_id})
+    return review_gateway.get_review(review_id=review_id)
