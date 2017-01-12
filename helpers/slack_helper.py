@@ -7,8 +7,6 @@ BOT_ID = os.environ.get("BOT_ID")
 
 # constants
 AT_BOT = "<@" + BOT_ID + ">"
-EXAMPLE_COMMAND = "do"
-
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 
 def get_all_users():
