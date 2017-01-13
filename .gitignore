@@ -1,5 +1,5 @@
 venv
-.config
+.config.sh
 *.pyc
 *.rdb
 __init__.py
